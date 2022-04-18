@@ -9,6 +9,9 @@ module.exports = {
         sans: ["Raleway"],
         display: ["Montserrat"],
       },
+      height: (theme) => ({
+        taskList: "calc(100vh - 260px)",
+      }),
     },
   },
   plugins: [],
