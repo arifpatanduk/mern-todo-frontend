@@ -21,7 +21,7 @@ const TaskCard: React.FC<Props> = ({ title }) => {
           <TraschIcon />
         </span>
       </div>
-      <DeleteModal />
+      {/* <DeleteModal /> */}
     </div>
   );
 };
