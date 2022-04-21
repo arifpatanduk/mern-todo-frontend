@@ -1,6 +1,10 @@
 import React from "react";
 import CloseIcon from "../../assets/svg/close";
 import { Transition } from "react-transition-group";
+import classnames from "classnames";
+import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "react-query";
+import { postTodo } from "../../api/postTodo";
 
 type Inputs = {
   title: string;
@@ -47,10 +51,43 @@ const overlayTransitionStyles = {
 };
 
 const Form: React.FC<Props> = ({ inProp, onClose }) => {
-  // const handleOnClose = () => {
-  //   reset()
-  //   onClose()
-  // }
+  const cache = useQueryClient();
+  const { register, handleSubmit, errors, reset } = useForm<Inputs>();
+  const { mutate } = useMutation(postTodo, {
+    onSuccess: () => {
+      cache.invalidateQueries("todos");
+    },
+  });
+
+  const handleOnClose = () => {
+    reset();
+    onClose();
+  };
+
+  // React-Hook-Form
+  const onSubmit = async (data: Inputs): Promise<void> => {
+    try {
+      await mutate(data);
+      reset();
+    } catch (error) {
+      console.log("errors ??", errors);
+    }
+  };
+
+  const placeholderStyle = classnames(
+    ["text-darkPurple", "flex-1", "bg-transparent", "outline-none"].join(" "),
+    {
+      "placeholder-red-400": errors.title,
+    }
+  );
+
+  const inputStyle = classnames(
+    "flex justify-center items-center bg-gray-200 px-4 py-2 rounded-lg box-border",
+    {
+      "bg-red-200": errors.title,
+    }
+  );
+
   return (
     <Transition in={inProp} timeout={DURATION}>
       {(state) => (
@@ -70,24 +107,55 @@ const Form: React.FC<Props> = ({ inProp, onClose }) => {
             }}
             className="fixed flex flex-col z-10 inset-x-0 rounded-t-lg p-4 h-32 bg-white"
           >
-            <form className="flex justify-center items-center bg-gray-200 px-4 py-2 rounded-lg box-border">
+            <form onSubmit={handleSubmit(onSubmit)} className={inputStyle}>
               <input
+                ref={register({
+                  required: {
+                    value: true,
+                    message: "This field is required!",
+                  },
+                  maxLength: {
+                    value: 30,
+                    message: "No more than 30 characters!",
+                  },
+                  minLength: {
+                    value: 8,
+                    message: "Minimum characters is 8!",
+                  },
+                })}
                 name="title"
-                placeholder="Write new task"
-                className="text-darkPurple flex-1 bg-transparent outline-none"
+                placeholder={errors.title ? "...Oops!" : "Add new task"}
+                className={placeholderStyle}
               />
               <input
+                ref={register}
                 className="hidden"
                 name="status"
                 defaultValue="uncompleted"
               />
-              <input
-                type="submit"
-                value="add"
-                className="bg-transparent text-md font-bold text-darkPurple outline-none ml-1"
-              />
+              {errors.title ? (
+                <button
+                  onClick={() => reset()}
+                  className="bg-transparent text-md font-bold text-darkPurple outline-none ml-1"
+                >
+                  Reset
+                </button>
+              ) : (
+                <input
+                  type="submit"
+                  value="Add"
+                  className="bg-transparent text-md font-bold text-darkPurple outline-none ml-1"
+                />
+              )}
             </form>
+            {errors.title && (
+              <span className="text-xs text-red-500 font-semibold tracking-wide mt-2 pl-1">
+                {errors?.title?.message}
+              </span>
+            )}
+
             <span
+              onClick={handleOnClose}
               className="absolute transform -translate-x-1/2 -translate-y-1/2"
               style={{
                 bottom: "10px",
