@@ -21,7 +21,14 @@ const TaskList: React.FC = () => {
   return (
     <section className="flex flex-col overflow-x-hidden overflow-y-auto h-taskList rounded">
       {data?.todos.map((todo) => {
-        return <TaskCard key={todo._id} title={todo.title} />;
+        return (
+          <TaskCard
+            key={todo._id}
+            title={todo.title}
+            taskId={todo._id}
+            status={todo.status}
+          />
+        );
       })}
     </section>
   );
