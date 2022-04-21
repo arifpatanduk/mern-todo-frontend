@@ -16,6 +16,7 @@
     "react-dom": "^18.0.0",
     "react-query": "^3.35.0",
     "react-scripts": "5.0.1",
+    "react-transition-group": "^4.4.2",
     "typescript": "^4.6.3",
     "web-vitals": "^2.1.4",
     "webfontloader": "^1.6.28"
@@ -45,6 +46,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-transition-group": "^4.4.4",
     "@types/webfontloader": "^1.6.34",
     "autoprefixer": "^10.4.4",
     "postcss": "^8.4.12",
