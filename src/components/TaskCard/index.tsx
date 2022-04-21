@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CheckListIcon from "../../assets/svg/checklist";
 import TraschIcon from "../../assets/svg/trash";
 import ClockIcon from "../../assets/svg/clock";
@@ -6,6 +6,7 @@ import DeleteModal from "../../components/DeleteModal";
 import classnames from "classnames";
 import { useMutation, useQueryClient } from "react-query";
 import { updateTodo } from "../../api/updateTodo";
+import { deleteTodo } from "../../api/deleteTodo";
 
 type Props = {
   taskId: string;
@@ -15,11 +16,28 @@ type Props = {
 
 const TaskCard: React.FC<Props> = ({ title, taskId, status }) => {
   const cache = useQueryClient();
-  const { mutate, isLoading } = useMutation(updateTodo, {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { mutate: checkTodo, isLoading } = useMutation(updateTodo, {
     onSuccess: () => {
       cache.invalidateQueries("todos");
     },
   });
+
+  const { mutate: removeTodo } = useMutation(deleteTodo, {
+    onSuccess: () => {
+      cache.invalidateQueries("todos");
+    },
+  });
+
+  const handleRemoveTodo = (type: "delete" | "cancel") => {
+    if (type === "delete") {
+      removeTodo(taskId);
+      setShowDeleteModal(false);
+    }
+    if (type === "cancel") {
+      setShowDeleteModal(false);
+    }
+  };
 
   const containerClass = classnames(
     "flex justify-center items-center relative rounded shadow-lg p-4 mb-2 ",
@@ -52,15 +70,21 @@ const TaskCard: React.FC<Props> = ({ title, taskId, status }) => {
           ) : (
             <CheckListIcon
               className={checklistClass}
-              onClick={() => mutate(taskId)}
+              onClick={() => checkTodo(taskId)}
             />
           )}
         </span>
         <span className="w-5 h-5 ml-4 text-red-600">
-          <TraschIcon />
+          <TraschIcon onClick={() => setShowDeleteModal(true)} />
         </span>
       </div>
-      {/* <DeleteModal /> */}
+
+      <DeleteModal
+        inProp={showDeleteModal}
+        taskStatus={status}
+        onDelete={() => handleRemoveTodo("delete")}
+        onCancel={() => handleRemoveTodo("cancel")}
+      />
     </div>
   );
 };
